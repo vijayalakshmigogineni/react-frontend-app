@@ -4,8 +4,12 @@ import { useNavigate, Link } from 'react-router-dom';
 
 function RegisterPage() {
   const [form, setForm] = useState({
-    name: '', dob: '', phone: '', email: '',
-    password: '', confirmPassword: '', otp: ''
+    name: '',
+    dob: '',
+    phone: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
   });
 
   const navigate = useNavigate();
@@ -14,7 +18,7 @@ function RegisterPage() {
     e.preventDefault();
 
     // Basic validation
-    const requiredFields = ['name', 'dob', 'phone', 'email', 'password', 'confirmPassword', 'otp'];
+    const requiredFields = ['name', 'dob', 'phone', 'email', 'password', 'confirmPassword'];
     for (let field of requiredFields) {
       if (!form[field]) {
         alert(`Please fill in your ${field.replace(/([A-Z])/g, ' $1')}`);
@@ -32,8 +36,13 @@ function RegisterPage() {
     const payload = { ...rest, username: name };
 
     try {
-      await axios.post('http://localhost:8080/api/auth/register', payload);
-      navigate('/');
+      const res = await axios.post('http://localhost:8080/api/auth/register', payload);
+
+      // Store email in localStorage as fallback
+      localStorage.setItem('pendingEmail', res.data.email);
+
+      alert("OTP sent to your email. Please verify.");
+      navigate('/verify-otp', { state: { email: res.data.email } });
     } catch (error) {
       console.error('Registration failed:', error);
       alert('Registration failed. Please try again.');
@@ -88,16 +97,8 @@ function RegisterPage() {
           type="password"
           placeholder="Confirm Password"
           value={form.confirmPassword}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] transition duration-200"
-          onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
-        />
-
-        <input
-          type="text"
-          placeholder="OTP"
-          value={form.otp}
           className="w-full px-4 py-2 border border-gray-300 rounded-md mb-6 focus:outline-none focus:ring-2 focus:ring-[#1e3a8a] transition duration-200"
-          onChange={e => setForm({ ...form, otp: e.target.value })}
+          onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
         />
 
         <button
